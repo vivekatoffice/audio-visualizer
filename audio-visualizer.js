@@ -38,6 +38,10 @@ let controlsVisible = true;
 let hideControlsTimer = null;
 let mouseMovementTimer = null;
 
+// Axis Speaker Streaming
+let axisStreamingEnabled = false;
+let currentAudioFilePath = null;
+
 /* ===================================
    Initialization
    =================================== */
@@ -155,6 +159,54 @@ function setupEventListeners() {
         });
     }
 
+    // Axis Speaker Streaming Event Listeners
+    if (window.electron) {
+        // Enable/Disable Axis Streaming
+        document.getElementById('enableAxisStream').addEventListener('change', async (e) => {
+            axisStreamingEnabled = e.target.checked;
+            document.getElementById('axisSettings').style.display = e.target.checked ? 'block' : 'none';
+
+            if (e.target.checked) {
+                // Initialize Axis streamer
+                const config = {
+                    ip: document.getElementById('axisIP').value,
+                    username: document.getElementById('axisUsername').value,
+                    password: document.getElementById('axisPassword').value
+                };
+
+                const result = await window.electron.axisInit(config);
+                console.log('[Axis] Initialized:', result);
+            }
+        });
+
+        // Test Connection Button
+        document.getElementById('axisTestBtn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('axisStatus');
+            statusEl.textContent = '🔄 Testing connection...';
+            statusEl.style.display = 'block';
+            statusEl.style.background = 'rgba(255,255,255,0.1)';
+            statusEl.style.color = '#fff';
+
+            try {
+                const result = await window.electron.axisTest();
+
+                if (result.success) {
+                    statusEl.textContent = '✅ Connection successful! (Test beep sent)';
+                    statusEl.style.background = 'rgba(76, 175, 80, 0.2)';
+                    statusEl.style.color = '#4caf50';
+                } else {
+                    statusEl.textContent = `❌ Failed: ${result.error}`;
+                    statusEl.style.background = 'rgba(244, 67, 54, 0.2)';
+                    statusEl.style.color = '#f44336';
+                }
+            } catch (error) {
+                statusEl.textContent = `❌ Error: ${error.message}`;
+                statusEl.style.background = 'rgba(244, 67, 54, 0.2)';
+                statusEl.style.color = '#f44336';
+            }
+        });
+    }
+
     // Controls Auto-Hide
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('keydown', handleKeyPress);
@@ -245,6 +297,12 @@ function handleFileSelect(event) {
     // Display file name
     fileNameDisplay.textContent = file.name;
 
+    // Store file path for Axis streaming
+    if (file.path) {
+        currentAudioFilePath = file.path;
+        console.log('[Axis] Audio file path stored:', currentAudioFilePath);
+    }
+
     // Create object URL for the audio file
     const objectURL = URL.createObjectURL(file);
     audio.src = objectURL;
@@ -324,6 +382,20 @@ function togglePlayPause() {
         // Resume audio context if suspended
         if (audioContext && audioContext.state === 'suspended') {
             audioContext.resume();
+        }
+
+        // Stream to Axis speaker if enabled
+        if (axisStreamingEnabled && currentAudioFilePath && window.electron) {
+            console.log('[Axis] Streaming to speaker:', currentAudioFilePath);
+            window.electron.axisStream(currentAudioFilePath)
+                .then(result => {
+                    if (result.success) {
+                        console.log('[Axis] ✅ Streaming successful:', result);
+                    } else {
+                        console.error('[Axis] ❌ Streaming failed:', result.error);
+                    }
+                })
+                .catch(err => console.error('[Axis] ❌ Stream error:', err));
         }
     }
 }

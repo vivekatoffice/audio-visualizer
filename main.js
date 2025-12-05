@@ -1,7 +1,9 @@
-const { app, BrowserWindow, Menu, dialog } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
+const AxisFFmpegStreamer = require('./axis-ffmpeg-streamer');
 
 let mainWindow;
+let axisStreamer = null;
 
 function createWindow() {
     // Create the browser window
@@ -180,3 +182,59 @@ app.on('activate', function () {
         createWindow();
     }
 });
+
+// Axis Speaker IPC Handlers
+ipcMain.handle('axis-init', (event, config) => {
+    try {
+        axisStreamer = new AxisFFmpegStreamer(config.ip, config.username, config.password);
+        console.log('[Main] Axis streamer initialized:', config.ip);
+        return { success: true };
+    } catch (error) {
+        console.error('[Main] Axis init error:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('axis-test', async () => {
+    if (!axisStreamer) {
+        return { success: false, error: 'Axis streamer not initialized' };
+    }
+
+    try {
+        console.log('[Main] Testing Axis connection...');
+        const result = await axisStreamer.testConnection();
+        console.log('[Main] Axis test result:', result);
+        return result;
+    } catch (error) {
+        console.error('[Main] Axis test error:', error);
+        return error;
+    }
+});
+
+ipcMain.handle('axis-stream', async (event, filepath) => {
+    if (!axisStreamer) {
+        return { success: false, error: 'Axis streamer not initialized' };
+    }
+
+    try {
+        console.log('[Main] Streaming to Axis:', filepath);
+        const result = await axisStreamer.streamAudio(filepath);
+        console.log('[Main] Axis stream result:', result);
+        return result;
+    } catch (error) {
+        console.error('[Main] Axis stream error:', error);
+        return error;
+    }
+});
+
+ipcMain.handle('axis-stop', () => {
+    if (!axisStreamer) {
+        return { success: false, error: 'Axis streamer not initialized' };
+    }
+
+    console.log('[Main] Stopping Axis stream...');
+    const result = axisStreamer.stopStreaming();
+    console.log('[Main] Axis stop result:', result);
+    return result;
+});
+

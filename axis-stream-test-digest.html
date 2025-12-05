@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axis Speaker Stream Test - Digest Auth</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-bottom: 10px;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .note strong {
+            color: #533f03;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔊 Axis Speaker Test <span class="badge">Digest Auth</span></h1>
+        <p class="subtitle">Using Digest Authentication for VAPIX API</p>
+
+        <div class="note">
+            <strong>✅ Digest Auth Detected!</strong><br>
+            This version uses Digest Authentication as required by Axis devices.
+            Postman confirmation: Working with Digest Auth.
+        </div>
+
+        <!-- Axis Device Configuration -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>🎯</span> Axis Device Configuration
+            </div>
+            <div class="form-group">
+                <label for="deviceIP">Device IP Address</label>
+                <input type="text" id="deviceIP" placeholder="192.168.1.100" value="192.168.1.100">
+                <div class="hint">Enter the IP address of your Axis speaker</div>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="root" value="root">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button class="btn btn-test" onclick="testConnection()">
+                🔌 Test Connection (Digest Auth)
+            </button>
+        </div>
+
+        <!-- Status Messages -->
+        <div class="status" id="statusMessage"></div>
+
+        <!-- Info Section -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>ℹ️</span> Implementation Notes
+            </div>
+            <div style="font-size: 13px; color: #555; line-height: 1.6;">
+                <strong>Browser Limitations:</strong><br>
+                • Browsers don't natively support Digest Auth in fetch()<br>
+                • XMLHttpRequest with credentials can trigger browser's auth dialog<br>
+                • CORS still applies for browser requests<br>
+                <br>
+                <strong>Working Solutions:</strong><br>
+                ✅ <strong>Electron App</strong> - Use 'request' or 'axios' npm package with digest auth<br>
+                ✅ <strong>Node.js Backend</strong> - Proxy requests with digest auth<br>
+                ✅ <strong>Postman</strong> - Native digest auth support (confirmed working)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        async function testConnection() {
+            const ip = document.getElementById('deviceIP').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!ip || !username || !password) {
+                showStatus('Please fill in all device configuration fields', 'error');
+                return;
+            }
+
+            showStatus('Testing connection with Digest Auth...', 'info');
+
+            try {
+                // Attempt 1: Try XMLHttpRequest (may trigger browser auth dialog)
+                const url = `http://${ip}/axis-cgi/param.cgi?action=list&group=Properties.Audio.Decoder`;
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true, username, password);
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            console.log('Response:', xhr.responseText);
+                            showStatus('✅ Connection successful! (Check console for device capabilities)', 'success');
+                        } else if (xhr.status === 401) {
+                            showStatus('❌ Authentication failed. Check your credentials.', 'error');
+                        } else if (xhr.status === 0) {
+                            showStatus('⚠️ CORS blocked. Use Electron app or create a proxy server. (Postman worked, so device is accessible!)', 'info');
+                        } else {
+                            showStatus(`❌ Error: HTTP ${xhr.status}`, 'error');
+                        }
+                    }
+                };
+
+                xhr.onerror = function () {
+                    showStatus('⚠️ Network error. CORS restrictions apply in browser. Use Electron app for full functionality.', 'info');
+                };
+
+                xhr.send();
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Display helpful info on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('%c Axis VAPIX Digest Auth Test ', 'background: #667eea; color: white; padding: 10px; font-size: 16px; font-weight: bold;');
+            console.log('This page tests Digest Authentication with Axis devices.');
+            console.log('Since Postman works with Digest Auth, the implementation needs:');
+            console.log('1. Electron app with "axios" or "request-digest" npm package');
+            console.log('2. Or a Node.js proxy server that handles digest auth');
+            console.log('');
+            console.log('Browser fetch() API does not support Digest Auth natively.');
+        });
+    </script>
+</body>
+
+</html>

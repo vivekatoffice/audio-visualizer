@@ -88,6 +88,43 @@
                         <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
                     </div>
                 </div>
+
+                <!-- Axis Speaker Streaming -->
+                <div class="viz-settings"
+                    style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <div class="setting-group">
+                        <label class="setting-label"
+                            style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="enableAxisStream"
+                                style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                            <span>🔊 Stream to Axis Speaker</span>
+                        </label>
+                    </div>
+                    <div id="axisSettings" style="display: none;">
+                        <div class="setting-group">
+                            <label class="setting-label">Device IP</label>
+                            <input type="text" id="axisIP" class="setting-select" value="10.176.13.98"
+                                style="padding: 8px;">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Username</label>
+                            <input type="text" id="axisUsername" class="setting-select" value="root"
+                                style="padding: 8px;">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Password</label>
+                            <input type="password" id="axisPassword" class="setting-select" value="pass"
+                                style="padding: 8px;">
+                        </div>
+                        <button id="axisTestBtn" class="control-btn"
+                            style="margin-top: 8px; padding: 10px 16px; font-size: 13px; width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            🔌 Test Connection
+                        </button>
+                        <div id="axisStatus"
+                            style="font-size: 12px; padding: 10px; border-radius: 6px; margin-top: 8px; display: none;">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats Display -->

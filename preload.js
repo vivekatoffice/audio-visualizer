@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.on('change-visualization', (event, type) => {
                 callback(type);
             });
-        }
+        },
+
+        // Axis Speaker Streaming
+        axisInit: (config) => ipcRenderer.invoke('axis-init', config),
+        axisTest: () => ipcRenderer.invoke('axis-test'),
+        axisStream: (filepath) => ipcRenderer.invoke('axis-stream', filepath),
+        axisStop: () => ipcRenderer.invoke('axis-stop')
     }
 );
