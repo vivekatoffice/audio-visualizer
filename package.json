@@ -1,0 +1,53 @@
+{
+  "name": "audio-visualizer",
+  "version": "1.0.0",
+  "description": "Stunning 3D Audio Visualizer with Three.js",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable"
+  },
+  "keywords": [
+    "audio",
+    "visualizer",
+    "threejs",
+    "electron"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.audiovisualizer.app",
+    "productName": "Audio Visualizer",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "files": [
+      "main.js",
+      "audio-visualizer.html",
+      "audio-visualizer.css",
+      "audio-visualizer.js",
+      "preload.js"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Immersive 3D audio visualizer with Three.js - Experience your music in a whole new dimension">
+    <title>3D Audio Visualizer - Immersive Sound Experience</title>
+    <link rel="stylesheet" href="audio-visualizer.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Background Effects -->
+        <div class="gradient-bg"></div>
+        <div class="grain"></div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="title">
+                    <span class="title-gradient">Audio Visualizer</span>
+                </h1>
+                <p class="subtitle">Experience sound in three dimensions</p>
+            </header>
+
+            <!-- Audio Controls Card -->
+            <div class="controls-card glass-effect">
+                <div class="upload-section">
+                    <input type="file" id="audioFile" accept=".m4a,audio/m4a,audio/*" class="file-input">
+                    <label for="audioFile" class="upload-label">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <span class="upload-text">Choose Audio File</span>
+                        <span class="file-name" id="fileName">Supports .m4a and other audio formats</span>
+                    </label>
+                </div>
+
+                <div class="player-controls" id="playerControls">
+                    <button class="control-btn play-btn" id="playBtn" disabled>
+                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                        <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                            <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+                        </svg>
+                    </button>
+
+                    <div class="progress-container">
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span id="duration">0:00</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                            <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0"
+                                disabled>
+                        </div>
+                    </div>
+
+                    <div class="volume-control">
+                        <svg class="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                    </div>
+                </div>
+
+                <!-- Visualization Settings -->
+                <div class="viz-settings">
+                    <div class="setting-group">
+                        <label class="setting-label">Visualization Style</label>
+                        <select class="setting-select" id="vizStyle">
+                            <option value="bars">Frequency Bars</option>
+                            <option value="sphere" selected>Pulsing Sphere</option>
+                            <option value="wave">Wave Particles</option>
+                            <option value="ring">Expanding Rings</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label class="setting-label">Sensitivity</label>
+                        <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Display -->
+            <div class="stats-card glass-effect" id="statsCard">
+                <div class="stat-item">
+                    <span class="stat-label">Frequency</span>
+                    <span class="stat-value" id="freqValue">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bass</span>
+                    <span class="stat-value" id="bassValue">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Treble</span>
+                    <span class="stat-value" id="trebleValue">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Hint (shown when controls are hidden) -->
+        <div class="controls-hint" id="controlsHint">
+            Move mouse or press <strong>H</strong> to show controls
+        </div>
+
+        <!-- Three.js Canvas -->
+        <canvas id="visualizerCanvas"></canvas>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="audio-visualizer.js"></script>
+</body>
+
+</html>
