@@ -1,6 +1,6 @@
 {
   "name": "audio-visualizer",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Stunning 3D Audio Visualizer with Three.js",
   "main": "main.js",
   "scripts": {
@@ -44,7 +44,8 @@
       "audio-visualizer.html",
       "audio-visualizer.css",
       "audio-visualizer.js",
-      "preload.js"
+      "preload.js",
+      "axis-ffmpeg-streamer.js"
     ],
     "directories": {
       "output": "dist"

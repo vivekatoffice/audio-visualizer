@@ -140,7 +140,7 @@ function createMenu() {
                         dialog.showMessageBox(mainWindow, {
                             type: 'info',
                             title: 'About Audio Visualizer',
-                            message: 'Audio Visualizer v1.0.0',
+                            message: 'Audio Visualizer v1.2.0',
                             detail: 'A stunning 3D audio visualization application built with Electron and Three.js.\n\nSupports .m4a and other audio formats.\n\nCreated with ❤️ using modern web technologies.',
                             buttons: ['OK']
                         });
