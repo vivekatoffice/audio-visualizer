@@ -6,8 +6,6 @@ A stunning, immersive audio visualizer built with Three.js and the Web Audio API
 https://github.com/user-attachments/assets/a1c649d2-e1f0-4d4d-ba21-566143bca4ca
 
 
-
-
 ## Features
 
 ### 🎵 Audio Playback
