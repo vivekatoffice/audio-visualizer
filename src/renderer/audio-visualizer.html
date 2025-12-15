@@ -8,6 +8,14 @@
         content="Immersive 3D audio visualizer with Three.js - Experience your music in a whole new dimension">
     <title>3D Audio Visualizer - Immersive Sound Experience</title>
     <link rel="stylesheet" href="audio-visualizer.css">
+    <!-- Import Map for local modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./three.module.js"
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -85,11 +93,42 @@
                                 <option value="sphere" selected>Pulsing Sphere</option>
                                 <option value="wave">Wave Particles</option>
                                 <option value="ring">Expanding Rings</option>
+                                <option value="stl">STL Model</option>
                             </select>
                         </div>
                         <div class="setting-group">
                             <label class="setting-label">Sensitivity</label>
                             <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
+                        </div>
+                    </div>
+
+                    <!-- STL Controls (Hidden by default) -->
+                    <div id="stlControls" class="viz-settings"
+                        style="display: none; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        <div class="setting-group">
+                            <label class="setting-label">STL Model File</label>
+                            <input type="file" id="stlFileInput" accept=".stl" class="setting-select"
+                                style="padding: 5px;">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Display Mode</label>
+                            <div style="display: flex; gap: 5px;">
+                                <button id="btnSolid" class="control-btn"
+                                    style="flex: 1; font-size: 0.8rem; padding: 5px;">Solid</button>
+                                <button id="btnWireframe" class="control-btn"
+                                    style="flex: 1; font-size: 0.8rem; padding: 5px;">Wire</button>
+                                <button id="btnAngle" class="control-btn"
+                                    style="flex: 1; font-size: 0.8rem; padding: 5px;">Angle</button>
+                            </div>
+                        </div>
+                        <div class="setting-group" id="colorContainer">
+                            <label class="setting-label">Mesh Color</label>
+                            <input type="color" id="colorPicker" value="#4aa3ff"
+                                style="width: 100%; height: 30px; border: none; background: none; cursor: pointer;">
+                        </div>
+                        <div class="setting-group">
+                            <button id="btnAutoRotate" class="control-btn" style="width: 100%;">Start Auto
+                                Rotation</button>
                         </div>
                     </div>
 
@@ -159,8 +198,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="audio-visualizer.js"></script>
+    <script type="module" src="audio-visualizer.js"></script>
 </body>
 
 </html>

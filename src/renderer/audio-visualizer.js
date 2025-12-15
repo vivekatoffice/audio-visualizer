@@ -2,14 +2,25 @@
    Audio Visualizer with Three.js
    =================================== */
 
+import * as THREE from 'three';
+import { STLLoader } from './STLLoader.js';
+import { OrbitControls } from './OrbitControls.js';
+
 // Global Variables
-let scene, camera, renderer;
+let scene, camera, renderer, controls;
 let visualizerObjects = [];
 let audioContext, analyser, audioSource;
 let audio;
 let isPlaying = false;
 let currentVisualization = 'sphere';
 let sensitivity = 5;
+
+// STL State
+let stlMesh = null;
+let stlMode = 'solid'; // solid, wireframe, angle
+let stlColor = '#4aa3ff';
+let stlAutoRotate = false;
+const stlLoader = new STLLoader();
 
 // Audio Data
 let frequencyData;
@@ -31,12 +42,21 @@ const freqValue = document.getElementById('freqValue');
 const bassValue = document.getElementById('bassValue');
 const trebleValue = document.getElementById('trebleValue');
 
+// STL DOM Elements
+const stlControls = document.getElementById('stlControls');
+const stlFileInput = document.getElementById('stlFileInput');
+const btnSolid = document.getElementById('btnSolid');
+const btnWireframe = document.getElementById('btnWireframe');
+const btnAngle = document.getElementById('btnAngle');
+const btnAutoRotate = document.getElementById('btnAutoRotate');
+const colorPicker = document.getElementById('colorPicker');
+const colorContainer = document.getElementById('colorContainer');
+
 // Controls visibility
 const contentDiv = document.querySelector('.content');
 const controlsHint = document.getElementById('controlsHint');
 let controlsVisible = true;
 let hideControlsTimer = null;
-let mouseMovementTimer = null;
 
 // Axis Speaker Streaming
 let axisStreamingEnabled = false;
@@ -91,6 +111,15 @@ function initThreeJS() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(0x0a0a0f, 0.5);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
+    // Controls
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = false;
+    controls.autoRotateSpeed = 2.0;
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
@@ -103,6 +132,10 @@ function initThreeJS() {
     const pointLight2 = new THREE.PointLight(0x0088ff, 1, 100);
     pointLight2.position.set(-10, -10, 10);
     scene.add(pointLight2);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
 
     // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
@@ -137,11 +170,52 @@ function setupEventListeners() {
     // Visualization Settings
     vizStyleSelect.addEventListener('change', (e) => {
         currentVisualization = e.target.value;
+
+        // Show/Hide STL controls
+        if (currentVisualization === 'stl') {
+            stlControls.style.display = 'block';
+        } else {
+            stlControls.style.display = 'none';
+        }
+
         createVisualization(currentVisualization);
     });
 
     sensitivitySlider.addEventListener('input', (e) => {
         sensitivity = parseInt(e.target.value);
+    });
+
+    // STL Controls
+    stlFileInput.addEventListener('change', handleSTLFileSelect);
+
+    btnSolid.addEventListener('click', () => {
+        stlMode = 'solid';
+        updateSTLModeButtons();
+        updateSTLMaterial();
+    });
+
+    btnWireframe.addEventListener('click', () => {
+        stlMode = 'wireframe';
+        updateSTLModeButtons();
+        updateSTLMaterial();
+    });
+
+    btnAngle.addEventListener('click', () => {
+        stlMode = 'angle';
+        updateSTLModeButtons();
+        updateSTLMaterial();
+    });
+
+    colorPicker.addEventListener('input', (e) => {
+        stlColor = e.target.value;
+        updateSTLMaterial();
+    });
+
+    btnAutoRotate.addEventListener('click', () => {
+        stlAutoRotate = !stlAutoRotate;
+        controls.autoRotate = stlAutoRotate;
+        btnAutoRotate.textContent = stlAutoRotate ? 'Stop Auto Rotation' : 'Start Auto Rotation';
+        btnAutoRotate.style.background = stlAutoRotate ? 'rgba(74, 163, 255, 0.3)' : '';
     });
 
     // Electron IPC Listeners (if running in Electron)
@@ -155,6 +229,8 @@ function setupEventListeners() {
         window.electron.onVisualizationChange((type) => {
             currentVisualization = type;
             vizStyleSelect.value = type;
+            if (type === 'stl') stlControls.style.display = 'block';
+            else stlControls.style.display = 'none';
             createVisualization(type);
         });
     }
@@ -451,6 +527,10 @@ function createVisualization(type) {
     });
     visualizerObjects = [];
 
+    // Reset camera position
+    camera.position.set(0, 0, 30);
+    camera.lookAt(0, 0, 0);
+
     // Create new visualization based on type
     switch (type) {
         case 'bars':
@@ -464,6 +544,9 @@ function createVisualization(type) {
             break;
         case 'ring':
             createExpandingRings();
+            break;
+        case 'stl':
+            createSTLVisualization();
             break;
     }
 }
@@ -584,7 +667,166 @@ function createExpandingRings() {
 }
 
 /* ===================================
-   Visualization Animation
+   STL Visualization
+   =================================== */
+
+function handleSTLFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        try {
+            const geometry = stlLoader.parse(event.target.result);
+            setupSTLMesh(geometry);
+        } catch (err) {
+            console.error(err);
+            alert('Error parsing STL file');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function createSTLVisualization() {
+    // Try to load default model if no mesh exists
+    if (!stlMesh) {
+        stlLoader.load('./model.stl', function (geometry) {
+            setupSTLMesh(geometry);
+        }, undefined, function (error) {
+            console.log('No default model found');
+        });
+    } else {
+        // Re-add existing mesh
+        scene.add(stlMesh);
+        visualizerObjects.push(stlMesh);
+
+        // Adjust camera
+        camera.position.set(100, 100, 100);
+        camera.lookAt(0, 0, 0);
+        controls.target.set(0, 0, 0);
+    }
+
+    // Update UI buttons
+    updateSTLModeButtons();
+}
+
+function setupSTLMesh(geometry) {
+    // Clear existing
+    if (stlMesh) {
+        scene.remove(stlMesh);
+        if (stlMesh.geometry) stlMesh.geometry.dispose();
+        if (stlMesh.material) stlMesh.material.dispose();
+        // Remove from visualizerObjects if present
+        const index = visualizerObjects.indexOf(stlMesh);
+        if (index > -1) visualizerObjects.splice(index, 1);
+    }
+
+    const material = getSTLMaterial();
+    stlMesh = new THREE.Mesh(geometry, material);
+
+    // Center & Scale
+    geometry.computeBoundingBox();
+    const bbox = geometry.boundingBox;
+    const center = new THREE.Vector3();
+    bbox.getCenter(center);
+    geometry.translate(-center.x, -center.y, -center.z);
+
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    if (maxDim > 0) {
+        const targetSize = 50; // Smaller than viewer to fit visualizer scene
+        stlMesh.scale.setScalar(targetSize / maxDim);
+    }
+
+    // Store original scale for audio reactivity
+    stlMesh.userData.baseScale = stlMesh.scale.x;
+
+    stlMesh.castShadow = true;
+    stlMesh.receiveShadow = true;
+
+    scene.add(stlMesh);
+    visualizerObjects.push(stlMesh);
+
+    // Adjust camera
+    camera.position.set(60, 60, 60);
+    camera.lookAt(0, 0, 0);
+    controls.target.set(0, 0, 0);
+}
+
+function getSTLMaterial() {
+    switch (stlMode) {
+        case 'wireframe':
+            return new THREE.MeshStandardMaterial({
+                color: stlColor,
+                roughness: 0.5,
+                metalness: 0.1,
+                wireframe: true
+            });
+        case 'angle':
+            return new THREE.MeshNormalMaterial();
+        case 'solid':
+        default:
+            return new THREE.MeshStandardMaterial({
+                color: stlColor,
+                roughness: 0.5,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+    }
+}
+
+function updateSTLMaterial() {
+    if (!stlMesh) return;
+    const newMaterial = getSTLMaterial();
+    stlMesh.material.dispose();
+    stlMesh.material = newMaterial;
+}
+
+function updateSTLModeButtons() {
+    btnSolid.style.background = stlMode === 'solid' ? 'rgba(74, 163, 255, 0.3)' : '';
+    btnWireframe.style.background = stlMode === 'wireframe' ? 'rgba(74, 163, 255, 0.3)' : '';
+    btnAngle.style.background = stlMode === 'angle' ? 'rgba(74, 163, 255, 0.3)' : '';
+
+    if (stlMode === 'angle') {
+        colorContainer.style.opacity = '0.3';
+        colorContainer.style.pointerEvents = 'none';
+    } else {
+        colorContainer.style.opacity = '1';
+        colorContainer.style.pointerEvents = 'auto';
+    }
+}
+
+function updateSTLVisualization() {
+    if (!stlMesh || !analyser) return;
+
+    // Get average frequency for reactivity
+    const avg = getAverageFrequency(0, bufferLength) / 255;
+    const bass = getAverageFrequency(0, bufferLength / 8) / 255;
+
+    // Pulse scale based on bass
+    const baseScale = stlMesh.userData.baseScale || 1;
+    const scale = baseScale * (1 + bass * (sensitivity / 5));
+    stlMesh.scale.set(scale, scale, scale);
+
+    // Rotate slightly based on overall volume
+    if (!controls.autoRotate) {
+        stlMesh.rotation.y += 0.002 + avg * 0.01;
+        stlMesh.rotation.x += Math.sin(Date.now() * 0.001) * 0.002;
+    }
+
+    // Color shift if in solid/wireframe mode
+    if (stlMode !== 'angle') {
+        const material = stlMesh.material;
+        // Mix base color with emissive pulse
+        const hue = (Date.now() / 10000) % 1;
+        material.emissive = new THREE.Color().setHSL(hue, 1, 0.2 * avg);
+    }
+}
+
+/* ===================================
+   Animation Animation
    =================================== */
 
 function updateVisualization() {
@@ -617,7 +859,13 @@ function updateVisualization() {
         case 'ring':
             updateExpandingRings();
             break;
+        case 'stl':
+            updateSTLVisualization();
+            break;
     }
+
+    // Update controls
+    if (controls) controls.update();
 }
 
 function updateFrequencyBars() {
