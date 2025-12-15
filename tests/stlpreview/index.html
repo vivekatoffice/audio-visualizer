@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STL Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #111;
+            font-family: 'Inter', sans-serif;
+            color: #eee;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s;
+            min-width: 220px;
+        }
+
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            width: 100%;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn.active {
+            background-color: rgba(74, 163, 255, 0.3);
+            border-color: #4aa3ff;
+            color: #fff;
+        }
+
+        .controls-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-row .btn {
+            flex: 1;
+            padding: 8px 5px;
+            font-size: 0.8rem;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .color-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            flex: 1;
+        }
+
+        input[type=color] {
+            -webkit-appearance: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+            overflow: hidden;
+        }
+
+        input[type=color]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type=color]::-webkit-color-swatch {
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+        }
+
+        input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            display: none;
+            font-weight: 300;
+        }
+
+        #stats {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #888;
+            line-height: 1.4;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 10px;
+        }
+    </style>
+    <!-- Import Map for local modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./three.module.js"
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <div id="ui-container">
+        <h1>STL Viewer</h1>
+
+        <div class="file-input-wrapper">
+            <button class="btn">Upload New STL</button>
+            <input type="file" id="fileInput" accept=".stl">
+        </div>
+
+        <div class="controls-group">
+            <div class="btn-row">
+                <button id="btnSolid" class="btn active">Solid</button>
+                <button id="btnWireframe" class="btn">Wireframe</button>
+                <button id="btnAngle" class="btn">Angle</button>
+            </div>
+
+            <div class="color-row" id="colorContainer">
+                <span class="color-label">Mesh Color</span>
+                <input type="color" id="colorPicker" value="#4aa3ff">
+            </div>
+
+            <button id="btnAutoRotate" class="btn">Start Auto Rotation</button>
+        </div>
+
+        <div id="stats"></div>
+    </div>
+
+    <div id="loading">Loading Model...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { STLLoader } from './STLLoader.js';
+        import { OrbitControls } from './OrbitControls.js';
+
+        // Scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
+        scene.fog = new THREE.Fog(0x111111, 200, 1000);
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 200);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotateSpeed = 2.0;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+        dirLight2.position.set(-5, -10, -7);
+        scene.add(dirLight2);
+
+        const pointLight = new THREE.PointLight(0x4aa3ff, 0.5);
+        pointLight.position.set(0, 100, 0);
+        scene.add(pointLight);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(500, 50, 0x333333, 0x222222);
+        scene.add(gridHelper);
+
+        // State
+        let currentMesh = null;
+        let currentMode = 'solid'; // solid, wireframe, angle
+        let meshColor = '#4aa3ff';
+        const loader = new STLLoader();
+
+        // UI Elements
+        const loadingEl = document.getElementById('loading');
+        const statsEl = document.getElementById('stats');
+        const btnSolid = document.getElementById('btnSolid');
+        const btnWireframe = document.getElementById('btnWireframe');
+        const btnAngle = document.getElementById('btnAngle');
+        const btnAutoRotate = document.getElementById('btnAutoRotate');
+        const colorPicker = document.getElementById('colorPicker');
+        const colorContainer = document.getElementById('colorContainer');
+
+        function showLoading(show) {
+            loadingEl.style.display = show ? 'block' : 'none';
+        }
+
+        function updateStats(geometry) {
+            const vertices = geometry.attributes.position.count;
+            const triangles = vertices / 3;
+            statsEl.innerHTML = `Vertices: ${vertices.toLocaleString()}<br>Triangles: ${triangles.toLocaleString()}`;
+        }
+
+        function getMaterial() {
+            switch (currentMode) {
+                case 'wireframe':
+                    return new THREE.MeshStandardMaterial({
+                        color: meshColor,
+                        roughness: 0.5,
+                        metalness: 0.1,
+                        wireframe: true
+                    });
+                case 'angle':
+                    return new THREE.MeshNormalMaterial();
+                case 'solid':
+                default:
+                    return new THREE.MeshStandardMaterial({
+                        color: meshColor,
+                        roughness: 0.5,
+                        metalness: 0.1,
+                        side: THREE.DoubleSide
+                    });
+            }
+        }
+
+        function updateMaterial() {
+            if (!currentMesh) return;
+
+            const newMaterial = getMaterial();
+            currentMesh.material.dispose();
+            currentMesh.material = newMaterial;
+        }
+
+        function updateModeButtons() {
+            btnSolid.classList.toggle('active', currentMode === 'solid');
+            btnWireframe.classList.toggle('active', currentMode === 'wireframe');
+            btnAngle.classList.toggle('active', currentMode === 'angle');
+
+            // Hide color picker in Angle mode as it uses NormalMaterial
+            if (currentMode === 'angle') {
+                colorContainer.style.opacity = '0.3';
+                colorContainer.style.pointerEvents = 'none';
+            } else {
+                colorContainer.style.opacity = '1';
+                colorContainer.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Button Listeners
+        btnSolid.addEventListener('click', () => { currentMode = 'solid'; updateModeButtons(); updateMaterial(); });
+        btnWireframe.addEventListener('click', () => { currentMode = 'wireframe'; updateModeButtons(); updateMaterial(); });
+        btnAngle.addEventListener('click', () => { currentMode = 'angle'; updateModeButtons(); updateMaterial(); });
+
+        btnAutoRotate.addEventListener('click', () => {
+            controls.autoRotate = !controls.autoRotate;
+            btnAutoRotate.textContent = controls.autoRotate ? 'Stop Auto Rotation' : 'Start Auto Rotation';
+            btnAutoRotate.classList.toggle('active', controls.autoRotate);
+        });
+
+        colorPicker.addEventListener('input', (e) => {
+            meshColor = e.target.value;
+            updateMaterial();
+        });
+
+        function setupMesh(geometry) {
+            if (currentMesh) {
+                scene.remove(currentMesh);
+                currentMesh.geometry.dispose();
+                currentMesh.material.dispose();
+            }
+
+            const material = getMaterial();
+            currentMesh = new THREE.Mesh(geometry, material);
+
+            // Center & Scale
+            geometry.computeBoundingBox();
+            const bbox = geometry.boundingBox;
+            const center = new THREE.Vector3();
+            bbox.getCenter(center);
+            geometry.translate(-center.x, -center.y, -center.z);
+
+            const size = new THREE.Vector3();
+            bbox.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+
+            if (maxDim > 0) {
+                const targetSize = 100;
+                currentMesh.scale.setScalar(targetSize / maxDim);
+            }
+
+            currentMesh.castShadow = true;
+            currentMesh.receiveShadow = true;
+
+            scene.add(currentMesh);
+
+            updateStats(geometry);
+            showLoading(false);
+        }
+
+        // Load default model
+        showLoading(true);
+        loader.load('./model.stl', function (geometry) {
+            setupMesh(geometry);
+        }, undefined, function (error) {
+            console.log('No default model found');
+            showLoading(false);
+        });
+
+        // File Input
+        document.getElementById('fileInput').addEventListener('change', e => {
+            if (e.target.files.length === 0) return;
+            showLoading(true);
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const geometry = loader.parse(event.target.result);
+                    setupMesh(geometry);
+                } catch (err) {
+                    console.error(err);
+                    alert('Error parsing STL file');
+                    showLoading(false);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animate
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+    </script>
+</body>
+
+</html>
