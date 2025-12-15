@@ -13,7 +13,7 @@ function createWindow() {
         minWidth: 800,
         minHeight: 600,
         backgroundColor: '#0a0a0f',
-        icon: path.join(__dirname, 'audio-visualizer.ico'),
+        icon: path.join(__dirname, '../assets/audio-visualizer.ico'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -25,7 +25,7 @@ function createWindow() {
     });
 
     // Load the index.html
-    mainWindow.loadFile('audio-visualizer.html');
+    mainWindow.loadFile(path.join(__dirname, '../renderer/audio-visualizer.html'));
 
     // Show window when ready
     mainWindow.once('ready-to-show', () => {

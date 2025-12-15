@@ -2,7 +2,7 @@
   "name": "audio-visualizer",
   "version": "1.3.0",
   "description": "Stunning 3D Audio Visualizer with Three.js",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --x64",
@@ -24,7 +24,7 @@
     "appId": "com.audiovisualizer.app",
     "productName": "Audio Visualizer",
     "win": {
-      "icon": "audio-visualizer.ico",
+      "icon": "src/assets/audio-visualizer.ico",
       "target": [
         {
           "target": "nsis",
@@ -41,12 +41,8 @@
       "createStartMenuShortcut": true
     },
     "files": [
-      "main.js",
-      "audio-visualizer.html",
-      "audio-visualizer.css",
-      "audio-visualizer.js",
-      "preload.js",
-      "axis-ffmpeg-streamer.js"
+      "src/**/*",
+      "package.json"
     ],
     "directories": {
       "output": "dist"
