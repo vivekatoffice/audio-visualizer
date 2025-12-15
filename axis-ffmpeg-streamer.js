@@ -14,7 +14,10 @@ class AxisFFmpegStreamer {
 
         // Try to use bundled ffmpeg-static, fallback to system ffmpeg
         try {
-            this.ffmpegPath = require('ffmpeg-static');
+            this.ffmpegPath = require("ffmpeg-static").replace(
+                "app.asar",
+                "app.asar.unpacked"
+            );
             console.log('[Axis] Using bundled FFmpeg:', this.ffmpegPath);
         } catch (e) {
             this.ffmpegPath = 'ffmpeg.exe';
