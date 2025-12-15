@@ -28,118 +28,123 @@
 
             <!-- Audio Controls Card -->
             <div class="controls-card glass-effect">
-                <div class="upload-section">
-                    <input type="file" id="audioFile" accept=".m4a,audio/m4a,audio/*" class="file-input">
-                    <label for="audioFile" class="upload-label">
-                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <span class="upload-text">Choose Audio File</span>
-                        <span class="file-name" id="fileName">Supports .m4a and other audio formats</span>
-                    </label>
-                </div>
-
-                <div class="player-controls" id="playerControls">
-                    <button class="control-btn play-btn" id="playBtn" disabled>
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                        <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
-                            <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
-                        </svg>
-                    </button>
-
-                    <div class="progress-container">
-                        <div class="time-display">
-                            <span id="currentTime">0:00</span>
-                            <span id="duration">0:00</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                            <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0"
-                                disabled>
-                        </div>
-                    </div>
-
-                    <div class="volume-control">
-                        <svg class="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                        </svg>
-                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
-                    </div>
-                </div>
-
-                <!-- Visualization Settings -->
-                <div class="viz-settings">
-                    <div class="setting-group">
-                        <label class="setting-label">Visualization Style</label>
-                        <select class="setting-select" id="vizStyle">
-                            <option value="bars">Frequency Bars</option>
-                            <option value="sphere" selected>Pulsing Sphere</option>
-                            <option value="wave">Wave Particles</option>
-                            <option value="ring">Expanding Rings</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label class="setting-label">Sensitivity</label>
-                        <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
-                    </div>
-                </div>
-
-                <!-- Axis Speaker Streaming -->
-                <div class="viz-settings"
-                    style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                    <div class="setting-group">
-                        <label class="setting-label"
-                            style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="enableAxisStream"
-                                style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
-                            <span>🔊 Stream to Axis Speaker</span>
+                <div class="controls-scroll">
+                    <div class="upload-section">
+                        <input type="file" id="audioFile" accept=".m4a,audio/m4a,audio/*" class="file-input">
+                        <label for="audioFile" class="upload-label">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span class="upload-text">Choose Audio File</span>
+                            <span class="file-name" id="fileName">Supports .m4a and other audio formats</span>
                         </label>
                     </div>
-                    <div id="axisSettings" style="display: none;">
-                        <div class="setting-group">
-                            <label class="setting-label">Device IP</label>
-                            <input type="text" id="axisIP" class="setting-select" value="10.176.13.98"
-                                style="padding: 8px;">
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label">Username</label>
-                            <input type="text" id="axisUsername" class="setting-select" value="root"
-                                style="padding: 8px;">
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label">Password</label>
-                            <input type="password" id="axisPassword" class="setting-select" value="pass"
-                                style="padding: 8px;">
-                        </div>
-                        <button id="axisTestBtn" class="control-btn"
-                            style="margin-top: 8px; padding: 10px 16px; font-size: 13px; width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            🔌 Test Connection
+
+                    <div class="player-controls" id="playerControls">
+                        <button class="control-btn play-btn" id="playBtn" disabled>
+                            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+                            </svg>
                         </button>
-                        <div id="axisStatus"
-                            style="font-size: 12px; padding: 10px; border-radius: 6px; margin-top: 8px; display: none;">
+
+                        <div class="progress-container">
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                                <input type="range" class="progress-slider" id="progressSlider" min="0" max="100"
+                                    value="0" disabled>
+                            </div>
+                        </div>
+
+                        <div class="volume-control">
+                            <svg class="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                        </div>
+
+                    </div>
+
+                    <!-- Visualization Settings -->
+                    <div class="viz-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">Visualization Style</label>
+                            <select class="setting-select" id="vizStyle">
+                                <option value="bars">Frequency Bars</option>
+                                <option value="sphere" selected>Pulsing Sphere</option>
+                                <option value="wave">Wave Particles</option>
+                                <option value="ring">Expanding Rings</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Sensitivity</label>
+                            <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
+                        </div>
+                    </div>
+
+                    <!-- Axis Speaker Streaming -->
+                    <div class="viz-settings"
+                        style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        <div class="setting-group">
+                            <label class="setting-label"
+                                style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="enableAxisStream"
+                                    style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                                <span>🔊 Stream to Axis Speaker</span>
+                            </label>
+                        </div>
+                        <div id="axisSettings" style="display: none;">
+                            <div class="setting-group">
+                                <label class="setting-label">Device IP</label>
+                                <input type="text" id="axisIP" class="setting-select" value="10.176.13.98"
+                                    style="padding: 8px;">
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label">Username</label>
+                                <input type="text" id="axisUsername" class="setting-select" value="root"
+                                    style="padding: 8px;">
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label">Password</label>
+                                <input type="password" id="axisPassword" class="setting-select" value="pass"
+                                    style="padding: 8px;">
+                            </div>
+                            <button id="axisTestBtn" class="control-btn"
+                                style="margin-top: 8px; padding: 10px 16px; font-size: 13px; width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                🔌 Test Connection
+                            </button>
+                            <div id="axisStatus"
+                                style="font-size: 12px; padding: 10px; border-radius: 6px; margin-top: 8px; display: none;">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Stats Display -->
-            <div class="stats-card glass-effect" id="statsCard">
-                <div class="stat-item">
-                    <span class="stat-label">Frequency</span>
-                    <span class="stat-value" id="freqValue">--</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Bass</span>
-                    <span class="stat-value" id="bassValue">--</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Treble</span>
-                    <span class="stat-value" id="trebleValue">--</span>
+                <!-- Stats Display -->
+                <div class="stats-card glass-effect" id="statsCard">
+                    <div class="stat-item">
+                        <span class="stat-label">Frequency</span>
+                        <span class="stat-value" id="freqValue">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Bass</span>
+                        <span class="stat-value" id="bassValue">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Treble</span>
+                        <span class="stat-value" id="trebleValue">--</span>
+                    </div>
                 </div>
             </div>
         </div>

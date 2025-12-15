@@ -294,6 +294,50 @@ body {
     gap: var(--spacing-md);
 }
 
+/* ===================================
+   Controls Card Scrolling
+   =================================== */
+
+.controls-card {
+    max-height: 75vh;
+    /* Critical: enables scrolling */
+    overflow: hidden;
+    /* Keeps glass edges clean */
+}
+
+/* Inner scroll container */
+.controls-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    /* Scrollbar spacing */
+}
+
+/* Prevent scroll wheel from leaking to canvas */
+.controls-scroll {
+    overscroll-behavior: contain;
+}
+
+/* Optional: refined scrollbar for controls card only */
+.controls-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.controls-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.controls-scroll::-webkit-scrollbar-thumb {
+    background: hsla(240, 15%, 40%, 0.4);
+    border-radius: 4px;
+}
+
+.controls-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsla(240, 15%, 55%, 0.6);
+}
+
+
 /* Upload Section */
 .upload-section {
     position: relative;
