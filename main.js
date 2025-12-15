@@ -13,6 +13,7 @@ function createWindow() {
         minWidth: 800,
         minHeight: 600,
         backgroundColor: '#0a0a0f',
+        icon: path.join(__dirname, 'audio-visualizer.ico'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,

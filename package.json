@@ -24,6 +24,7 @@
     "appId": "com.audiovisualizer.app",
     "productName": "Audio Visualizer",
     "win": {
+      "icon": "audio-visualizer.ico",
       "target": [
         {
           "target": "nsis",
