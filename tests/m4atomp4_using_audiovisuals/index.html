@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Visualizer - M4A to MP4 Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="18" stroke="url(#gradient)" stroke-width="2" />
+                    <path d="M15 20L18 17V23L15 20Z" fill="url(#gradient)" />
+                    <path d="M20 15L23 18H17L20 15Z" fill="url(#gradient)" />
+                    <path d="M25 20L22 23V17L25 20Z" fill="url(#gradient)" />
+                    <path d="M20 25L17 22H23L20 25Z" fill="url(#gradient)" />
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#667eea" />
+                            <stop offset="100%" stop-color="#764ba2" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>Audio Visualizer Studio</h1>
+            </div>
+            <div class="subtitle">Transform M4A audio into stunning MP4 visualizations</div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="content-grid">
+            <!-- Left Panel - Controls -->
+            <div class="panel controls-panel">
+                <h2>Controls</h2>
+
+                <!-- File Upload -->
+                <div class="control-group">
+                    <label class="control-label">Audio File (M4A)</label>
+                    <div class="file-input-wrapper">
+                        <button class="btn btn-upload" id="uploadBtn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 3V13M10 3L6 7M10 3L14 7" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <path d="M3 13V15C3 16.1046 3.89543 17 5 17H15C16.1046 17 17 16.1046 17 15V13"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            Choose Audio File
+                        </button>
+                        <input type="file" id="audioInput" accept=".m4a,.mp3,.wav,.ogg" hidden>
+                    </div>
+                    <div class="file-info" id="fileInfo">No file selected</div>
+                </div>
+
+                <!-- Visualization Type -->
+                <div class="control-group">
+                    <label class="control-label">Visualization Style</label>
+                    <div class="viz-grid">
+                        <button class="viz-btn active" data-viz="waveform">
+                            <div class="viz-icon">〰️</div>
+                            <span>Waveform</span>
+                        </button>
+                        <button class="viz-btn" data-viz="circular">
+                            <div class="viz-icon">⭕</div>
+                            <span>Circular</span>
+                        </button>
+                        <button class="viz-btn" data-viz="bars">
+                            <div class="viz-icon">📊</div>
+                            <span>Bars</span>
+                        </button>
+                        <button class="viz-btn" data-viz="particles">
+                            <div class="viz-icon">✨</div>
+                            <span>Particles</span>
+                        </button>
+                        <button class="viz-btn" data-viz="spiral">
+                            <div class="viz-icon">🌀</div>
+                            <span>Spiral</span>
+                        </button>
+                        <button class="viz-btn" data-viz="radial">
+                            <div class="viz-icon">💫</div>
+                            <span>Radial</span>
+                        </button>
+                        <button class="viz-btn" data-viz="orbital">
+                            <div class="viz-icon">🪐</div>
+                            <span>Orbital</span>
+                        </button>
+                        <button class="viz-btn" data-viz="flower">
+                            <div class="viz-icon">🌸</div>
+                            <span>Flower</span>
+                        </button>
+                        <button class="viz-btn" data-viz="galaxy">
+                            <div class="viz-icon">🌌</div>
+                            <span>Galaxy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Color Scheme -->
+                <div class="control-group">
+                    <label class="control-label">Color Scheme</label>
+                    <div class="color-schemes">
+                        <button class="color-scheme active" data-scheme="gradient1"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></button>
+                        <button class="color-scheme" data-scheme="gradient2"
+                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"></button>
+                        <button class="color-scheme" data-scheme="gradient3"
+                            style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"></button>
+                        <button class="color-scheme" data-scheme="gradient4"
+                            style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"></button>
+                        <button class="color-scheme" data-scheme="gradient5"
+                            style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)"></button>
+                        <button class="color-scheme" data-scheme="gradient6"
+                            style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%)"></button>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="control-group">
+                    <label class="control-label">Settings</label>
+                    <div class="setting-item">
+                        <span>Smoothing</span>
+                        <input type="range" id="smoothing" min="0" max="1" step="0.1" value="0.8">
+                        <span class="value" id="smoothingValue">0.8</span>
+                    </div>
+                    <div class="setting-item">
+                        <span>Sensitivity</span>
+                        <input type="range" id="sensitivity" min="0.5" max="2" step="0.1" value="1">
+                        <span class="value" id="sensitivityValue">1.0</span>
+                    </div>
+                </div>
+
+                <!-- Aspect Ratio -->
+                <div class="control-group">
+                    <label class="control-label">Video Aspect Ratio</label>
+                    <div class="aspect-ratio-grid">
+                        <button class="aspect-btn" data-ratio="16:9" data-width="1920" data-height="1080">
+                            <div class="aspect-icon">📺</div>
+                            <span>16:9</span>
+                            <small>Horizontal</small>
+                        </button>
+                        <button class="aspect-btn active" data-ratio="9:16" data-width="1080" data-height="1920">
+                            <div class="aspect-icon">📱</div>
+                            <span>9:16</span>
+                            <small>Shorts/Reels</small>
+                        </button>
+                        <button class="aspect-btn" data-ratio="1:1" data-width="1080" data-height="1080">
+                            <div class="aspect-icon">⬜</div>
+                            <span>1:1</span>
+                            <small>Square</small>
+                        </button>
+                        <button class="aspect-btn" data-ratio="4:5" data-width="1080" data-height="1350">
+                            <div class="aspect-icon">📸</div>
+                            <span>4:5</span>
+                            <small>Instagram</small>
+                        </button>
+                        <button class="aspect-btn" data-ratio="21:9" data-width="2560" data-height="1080">
+                            <div class="aspect-icon">🎬</div>
+                            <span>21:9</span>
+                            <small>Cinematic</small>
+                        </button>
+                        <button class="aspect-btn" data-ratio="4:3" data-width="1440" data-height="1080">
+                            <div class="aspect-icon">🖥️</div>
+                            <span>4:3</span>
+                            <small>Classic</small>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="control-group">
+                    <div class="playback-controls">
+                        <button class="btn btn-primary" id="playBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5 3L17 10L5 17V3Z" />
+                            </svg>
+                            Play
+                        </button>
+                        <button class="btn btn-secondary" id="pauseBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <rect x="5" y="3" width="4" height="14" />
+                                <rect x="11" y="3" width="4" height="14" />
+                            </svg>
+                            Pause
+                        </button>
+                        <button class="btn btn-secondary" id="stopBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <rect x="5" y="5" width="10" height="10" />
+                            </svg>
+                            Stop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <div class="control-group">
+                    <button class="btn btn-export" id="exportBtn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 13V3M10 13L6 9M10 13L14 9" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path d="M3 13V15C3 16.1046 3.89543 17 5 17H15C16.1046 17 17 16.1046 17 15V13"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Export to MP4
+                    </button>
+                    <div class="export-status" id="exportStatus"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Visualization -->
+            <div class="panel viz-panel">
+                <canvas id="visualizer"></canvas>
+                <div class="audio-info" id="audioInfo">
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="visualizer.js"></script>
+</body>
+
+</html>
