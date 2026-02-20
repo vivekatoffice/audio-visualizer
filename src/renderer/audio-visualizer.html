@@ -84,6 +84,18 @@
 
                     </div>
 
+                    <!-- Export Video Control -->
+                    <div class="viz-settings"
+                        style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        <button id="exportBtn" class="control-btn" disabled
+                            style="width: 100%; padding: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            🎬 Export Video
+                        </button>
+                        <div id="exportStatus"
+                            style="font-size: 12px; margin-top: 8px; text-align: center; font-weight: 500;">
+                        </div>
+                    </div>
+
                     <!-- Visualization Settings -->
                     <div class="viz-settings">
                         <div class="setting-group">
@@ -93,6 +105,7 @@
                                 <option value="sphere" selected>Pulsing Sphere</option>
                                 <option value="wave">Wave Particles</option>
                                 <option value="ring">Expanding Rings</option>
+                                <option value="shader" selected>Audio-Reactive Shader</option>
                                 <option value="stl">STL Model</option>
                             </select>
                         </div>

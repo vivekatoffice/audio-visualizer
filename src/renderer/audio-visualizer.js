@@ -41,6 +41,13 @@ const sensitivitySlider = document.getElementById('sensitivity');
 const freqValue = document.getElementById('freqValue');
 const bassValue = document.getElementById('bassValue');
 const trebleValue = document.getElementById('trebleValue');
+const exportBtn = document.getElementById('exportBtn');
+const exportStatus = document.getElementById('exportStatus');
+
+// Recording State
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
 
 // STL DOM Elements
 const stlControls = document.getElementById('stlControls');
@@ -163,6 +170,9 @@ function setupEventListeners() {
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleAudioEnded);
+
+    // Export Video
+    exportBtn.addEventListener('click', exportToVideo);
 
     // Volume
     volumeSlider.addEventListener('input', handleVolumeChange);
@@ -391,6 +401,7 @@ function handleFileSelect(event) {
     // Enable controls
     playBtn.disabled = false;
     progressSlider.disabled = false;
+    exportBtn.disabled = false;
 
     // Auto-play
     setTimeout(() => {
@@ -414,6 +425,7 @@ function loadAudioFile(filePath) {
     // Enable controls
     playBtn.disabled = false;
     progressSlider.disabled = false;
+    exportBtn.disabled = false;
 
     // Auto-play
     setTimeout(() => {
@@ -435,8 +447,139 @@ function initAudioContext() {
 
     // Connect Audio Source
     audioSource = audioContext.createMediaElementSource(audio);
+
+    // Create an intermediate gain node (so it can be recorded without being audible if we wanted, etc.)
+    // But for normal play out loud, we must connect to audioContext.destination
     audioSource.connect(analyser);
     analyser.connect(audioContext.destination);
+}
+
+/* ===================================
+   Video Export Handling
+   =================================== */
+
+async function exportToVideo() {
+    if (isRecording) return; // Prevent multiple clicks
+
+    exportStatus.textContent = 'Checking browser support...';
+    exportStatus.style.color = '#4aa3ff';
+
+    try {
+        // Find best codec
+        let mimeType = '';
+        const codecs = [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=vp8,opus',
+            'video/webm;codecs=h264,opus',
+            'video/mp4',
+            'video/webm'
+        ];
+
+        for (const codec of codecs) {
+            if (MediaRecorder.isTypeSupported(codec)) {
+                mimeType = codec;
+                console.log('Using codec:', codec);
+                break;
+            }
+        }
+
+        if (!mimeType) {
+            throw new Error('No supported video codec found in your browser');
+        }
+
+        // 1) Capture Video from Three.js Canvas (60fps)
+        const canvasStream = canvas.captureStream(60);
+
+        // 2) Capture Audio from Web Audio Context
+        const combinedStream = new MediaStream();
+
+        // Add Video Track
+        canvasStream.getVideoTracks().forEach(track => {
+            combinedStream.addTrack(track);
+        });
+
+        // Add Audio Track via a MediaStreamDestination
+        const audioDestination = audioContext.createMediaStreamDestination();
+        audioSource.connect(audioDestination);
+
+        audioDestination.stream.getAudioTracks().forEach(track => {
+            combinedStream.addTrack(track);
+        });
+
+        exportStatus.textContent = 'Preparing recorder...';
+
+        const options = {
+            mimeType: mimeType,
+            videoBitsPerSecond: 5000000 // 5 Mbps
+        };
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(combinedStream, options);
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onerror = (event) => {
+            console.error('MediaRecorder error:', event);
+            exportStatus.textContent = `Recording error: ${event.error?.message || 'Unknown error'}`;
+            exportStatus.style.color = '#f44336';
+            isRecording = false;
+            exportBtn.disabled = false;
+        };
+
+        mediaRecorder.onstop = () => {
+            console.log('Recording stopped. Total chunks:', recordedChunks.length);
+            isRecording = false;
+            exportBtn.disabled = false;
+
+            if (recordedChunks.length === 0) {
+                exportStatus.textContent = 'No data recorded. Please try again.';
+                exportStatus.style.color = '#f44336';
+                return;
+            }
+
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+            a.download = `audio_visualization_${Date.now()}.${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            exportStatus.textContent = `✓ Export completed! ${(blob.size / 1024 / 1024).toFixed(2)} MB`;
+            exportStatus.style.color = '#4caf50';
+
+            setTimeout(() => {
+                exportStatus.textContent = '';
+            }, 5000);
+        };
+
+        // Start recording
+        mediaRecorder.start(100); // chunk every 100ms
+        isRecording = true;
+        exportBtn.disabled = true;
+
+        exportStatus.textContent = '🔴 Recording... ';
+        exportStatus.style.color = '#f44336';
+
+        // Start the song from the beginning if we aren't already playing or at the start
+        audio.currentTime = 0;
+        if (!isPlaying) {
+            togglePlayPause();
+        }
+
+    } catch (err) {
+        console.error('Export failed:', err);
+        exportStatus.textContent = `Export failed: ${err.message}`;
+        exportStatus.style.color = '#f44336';
+    }
 }
 
 /* ===================================
@@ -501,6 +644,12 @@ function handleAudioEnded() {
     playBtn.querySelector('.play-icon').style.display = 'block';
     playBtn.querySelector('.pause-icon').style.display = 'none';
     audio.currentTime = 0;
+
+    if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        exportStatus.textContent = 'Processing video...';
+        exportStatus.style.color = '#4aa3ff';
+    }
 }
 
 function handleVolumeChange(event) {
@@ -511,7 +660,7 @@ function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, '0')} `;
 }
 
 /* ===================================
@@ -544,6 +693,9 @@ function createVisualization(type) {
             break;
         case 'ring':
             createExpandingRings();
+            break;
+        case 'shader':
+            createShaderVisualizer();
             break;
         case 'stl':
             createSTLVisualization();
@@ -664,6 +816,75 @@ function createExpandingRings() {
         scene.add(ring);
         visualizerObjects.push(ring);
     }
+}
+
+/* ===================================
+   Shader Visualization
+   =================================== */
+
+const vertexShader = `
+varying vec2 vUv;
+varying vec3 vPosition;
+            void main() {
+                vUv = uv;
+                vPosition = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+            `;
+
+const fragmentShader = `
+uniform float time;
+uniform float bass;
+uniform float mid;
+uniform float treble;
+uniform vec3 baseColor;
+varying vec2 vUv;
+varying vec3 vPosition;
+
+            void main() {
+    // Generate some basic noise based on position and time
+    float noise = fract(sin(dot(vPosition.xyz, vec3(12.9898, 78.233, 123.456)) + time * 0.5) * 43758.5453);
+
+    // Create organic glowing effect based on UV
+    float glow = abs(sin(vUv.y * 20.0 + time * 3.0 + noise * 0.5));
+
+    // Mix the frequency data into the color
+    vec3 color = baseColor;
+                color.r += bass * 0.5 * glow;
+                color.g += mid * 0.5 * glow;
+                color.b += treble * 0.5 * glow;
+
+    // Add pulsing brightness based on overall frequency activity
+    float intensity = (bass + mid + treble) / 3.0;
+                color *= (0.5 + intensity * 1.5);
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+            `;
+
+function createShaderVisualizer() {
+    const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+
+    const uniforms = {
+        time: { value: 0.0 },
+        bass: { value: 0.0 },
+        mid: { value: 0.0 },
+        treble: { value: 0.0 },
+        baseColor: { value: new THREE.Color(0x8800ff) }
+    };
+
+    const material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: uniforms,
+        wireframe: false,
+        transparent: true,
+        opacity: 0.9,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    visualizerObjects.push(mesh);
 }
 
 /* ===================================
@@ -859,6 +1080,9 @@ function updateVisualization() {
         case 'ring':
             updateExpandingRings();
             break;
+        case 'shader':
+            updateShaderVisualizer();
+            break;
         case 'stl':
             updateSTLVisualization();
             break;
@@ -973,6 +1197,32 @@ function updateExpandingRings() {
         ring.material.color.setHSL(hue, 1, 0.5);
         ring.material.emissive.setHSL(hue, 1, 0.3 + value * 0.3);
     });
+}
+
+function updateShaderVisualizer() {
+    if (visualizerObjects.length === 0) return;
+
+    const mesh = visualizerObjects[0];
+    const material = mesh.material;
+
+    // Get average frequencies
+    const bass = getAverageFrequency(0, bufferLength / 8) / 255;
+    const mid = getAverageFrequency(bufferLength / 8, bufferLength / 2) / 255;
+    const treble = getAverageFrequency(bufferLength / 2, bufferLength) / 255;
+
+    // Update Uniforms
+    material.uniforms.time.value = Date.now() * 0.001;
+    material.uniforms.bass.value = bass * (sensitivity / 5);
+    material.uniforms.mid.value = mid * (sensitivity / 5);
+    material.uniforms.treble.value = treble * (sensitivity / 5);
+
+    // Morph scale based on bass
+    const scale = 1 + bass * (sensitivity / 10);
+    mesh.scale.set(scale, scale, scale);
+
+    // Dynamic Rotation
+    mesh.rotation.x += 0.005 + bass * 0.01;
+    mesh.rotation.y += 0.005 + mid * 0.01;
 }
 
 function getAverageFrequency(start, end) {
