@@ -49,7 +49,7 @@ https://github.com/user-attachments/assets/a1c649d2-e1f0-4d4d-ba21-566143bca4ca
 5. Use the play/pause button and progress bar to control playback
 
 ```cmd
-PS C:\Vivek\AxisTIP\API_MDs\Antigravity\audio-visualizer> npm start
+npm start
 
 > audio-visualizer@1.3.0 start
 
